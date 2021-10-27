@@ -22,11 +22,17 @@ print("print" + " print")
 "gweg" + "fwe"
 'gwegfwe'
 b'wtewte'
-type(b"wtewte")
+type(b"wtewte\xff")
 type(1)
 type(1.4)
 type("tet")
 "пуцпукпц".encode()
+
+#formatting strings
+print("%d" % 4)
+print("{}{}{{}}".format(4, 5))
+print(f"{4}{{}}")
+
 bin(0xd)
 bin(0xb)
 0b10000111111
@@ -68,6 +74,7 @@ x[0:]
 x[:4]
 x[::2]
 x[-1:-4:-1]
+x[:]
 
 a = "s"
 if a == "s":
@@ -103,6 +110,8 @@ b = 7
 while a < b:
     print(a)
     a += 1 # a = a + 1
+    if a > 2:
+        print(a+4)
 
 try: 
     x = [1,2,3]
@@ -110,5 +119,95 @@ try:
 except Exception as e:
     print(e)
 
+#list comprehensions
+c = [45, 1, 2]
+a = [x + 2 for x in c if x > 1]
+print(a)
+b = {k: v for k, v in [(1,20), (4,5)]}
+print(b)
 
+#None
+None == None
+print(type(None))
 
+#functions
+def f(a, b):
+    print(b)
+    return a + 2
+
+print(f(1, [1,2,3,4,5]))
+
+def f1(*a):
+    print(a)
+
+f1(1,2,3,4)
+
+def f2(a,b):
+    print(a+b)
+
+print(f2(a=1,b=2))
+f2(a=1,b=2)
+f2(1,b=2)
+
+def f3(a,b=4):
+    print(a+b)
+
+f3(1)
+f3(2,3)
+
+def f4(a=1,b=3,c=4,d=56):
+    if a < 0:
+        print(b+c)
+    else:
+        print(d-a)
+
+f4()
+f4(a=-1)
+f4(d=4)
+
+#arbitrary keyword arguments
+def f5(**kw):
+    print(kw)
+
+f5(a=1,b=3)
+
+def f6(a):
+    r = 1
+    try:
+        r = int(a)
+    except:
+        pass
+    return r
+
+print(f6("32"))
+print(f6("err"))
+
+def f7(a,b):
+    return a,b
+
+i = f7(2,3)
+print(i[0])
+
+#anonymous functions
+f8 = lambda x, y: x + y
+
+print(f8(3, 6))
+
+print(list(map(lambda x: x + 2, [1,2,3])))
+print(list(map(f6, [1,2,3])))
+
+#recursive functions
+def f9(a):
+    if a == 0:
+        pass
+    else:
+        print(a)
+        f9(a-1)
+
+f9(10)
+
+# Factorial (recursive + loops) 
+# n! 1*2....n-1*n
+
+# Fibonacci numbers (recursive + loops)
+# f(n) = f(n-1) + f(n-2), f(0) = 1, f(1) = 1
