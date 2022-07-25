@@ -1,3 +1,9 @@
+from math import sqrt
+from joblib import Parallel, delayed
+x = Parallel(n_jobs=2)(delayed(sqrt)(i ** 2) for i in range(10))
+print(x)
+#[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]
+
 #import numpy as np
 
 # numbers
@@ -211,3 +217,64 @@ f9(10)
 
 # Fibonacci numbers (recursive + loops)
 # f(n) = f(n-1) + f(n-2), f(0) = 1, f(1) = 1
+
+#n! (n-0) * (n-1) * (n-2) * .... * 3 *  2 *  1
+#n! 6 * 5     * 4     * 3     * 2     * 1
+
+def fib(n):
+    if n < 2:
+        return n 
+    a = 1
+    b = 0
+    for _ in range(2, n+1):
+        tmp = a
+        a = a + b
+        b = tmp
+    return a
+
+def fact(n):
+    prod = 1
+    for i in range(1, n):
+        prod *= i + 1
+    return prod
+print()
+#classes
+class Base:
+    b = 8
+    def __init__(self):
+        pass
+class Test(Base):
+    a = 4
+    def __init__(self, v):
+        self.value = v
+        if v > 4:
+            self.o = 8
+    def add(self, x):
+        self.value += x
+
+x = Test(4)
+y = Test(5)
+print(x.b)
+y.a=  6
+print(x.value, y.a)
+x.add(7)
+print(x.value, x.a)
+
+class Figure:
+    area = 0
+
+class Circle(Figure):
+    def __init__(self, r):
+        self.radius = r
+        self.area = 3.14159265358 * r ** 2
+
+class Square(Figure):
+    def __init__(self, s):
+        self.size = s
+        self.area = s * s 
+
+def print_area(f):
+    print(f.area)
+
+print_area(Circle(5))
+print_area(Square(5))
