@@ -6,6 +6,7 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import Control.Monad
 import System.IO
+import System.Environment (getArgs)
 
 type Letters = Map Char (Int, Set Int)
 data Configuration = Conf { 
@@ -21,12 +22,6 @@ defaultConfiguration = Conf {
 
 readWords :: FilePath -> IO [String]
 readWords filename = lines <$> readFile filename
-
-readAllowed :: IO [String]
-readAllowed = readWords "../allowed.txt"
-
-readAnswers :: IO [String]
-readAnswers = readWords "../answers.txt"
 
 readInput :: IO (String, String)
 readInput = (,) <$> getLine <*> getLine
@@ -75,9 +70,9 @@ matchLetters l w = all (\(n, c) -> Set.notMember n (get_places c)) $ zip [0..] w
     where 
         get_places c = maybe Set.empty snd (Map.lookup c l)
 main = do
-    allowed_ <- readAllowed
-    answers_ <- readAnswers
-    let dc = defaultConfiguration {allowed = allowed_, answers = answers_}
+    args <- getArgs
+    answers_ <- readWords $ if not (null args) then head args else "../answers.txt"
+    let dc = defaultConfiguration {answers = answers_}
     go dc ("", Map.empty, Set.empty)
     where 
         go c (w, l, n) = do
