@@ -1,24 +1,14 @@
-import Data.List
-import Data.Char
+import Data.List ( group, sort )
+import Data.Char ( isAlpha )
 import Data.Set (Set)
 import qualified Data.Set as Set
 import Data.Map (Map)
 import qualified Data.Map as Map
-import Control.Monad
-import System.IO
+import Control.Monad ( (>=>) )
+import System.IO ( hFlush, stdout )
 import System.Environment (getArgs)
 
 type Letters = Map Char (Int, Set Int)
-data Configuration = Conf { 
-    allowed :: [String],
-    answers :: [String]
-} deriving Show
-
-defaultConfiguration :: Configuration
-defaultConfiguration = Conf {
-    allowed = [],
-    answers = []
-}
 
 readWords :: FilePath -> IO [String]
 readWords filename = lines <$> readFile filename
@@ -45,14 +35,13 @@ getAnswers :: [String] -> String -> [String]
 getAnswers as w = filter (all (uncurry (==)) . filter (\(x, _) -> x /= '?') . zip w) as
 
 filterAnswers :: (String, Letters, Set Char) -> [String] -> [String]
-filterAnswers (w, l, n) = filter (\a -> all (`elem` a) (Map.keysSet l) && not (any (`elem` a) n) && matchWords a w && matchLetters l a{-&& checkPopulation l a-})
+filterAnswers (w, l, n) = filter (\a -> all (`elem` a) (Map.keysSet l) && 
+                                        matchNotLetters n w a && 
+                                        matchWords a w && 
+                                        matchLetters l a)
 
 mapify :: String -> Map Char Int
 mapify = Map.fromList . map (\x -> (head x, length x)) . group . sort
-
-checkPopulation :: Letters -> String -> Bool
-checkPopulation l w = all (\c -> maybe False (\n -> n >= fst (l Map.! c)) (Map.lookup c wm) ) (Map.keysSet l)
-    where wm = mapify w
 
 mergeWords :: String -> String -> String
 mergeWords [] x = x
@@ -69,11 +58,15 @@ matchLetters :: Letters -> String -> Bool
 matchLetters l w = all (\(n, c) -> Set.notMember n (get_places c)) $ zip [0..] w
     where 
         get_places c = maybe Set.empty snd (Map.lookup c l)
+
+matchNotLetters :: Set Char -> String -> String -> Bool
+matchNotLetters n w = or . zipWith (\a b -> a /= b && b `notElem` n) w
+
+main :: IO ()
 main = do
     args <- getArgs
-    answers_ <- readWords $ if not (null args) then head args else "../answers.txt"
-    let dc = defaultConfiguration {answers = answers_}
-    go dc ("", Map.empty, Set.empty)
+    answers <- readWords $ if not (null args) then head args else "../answers.txt"
+    go answers ("", Map.empty, Set.empty)
     where 
         go c (w, l, n) = do
             test <- (checkInput >=> processInput 0 ("", Map.empty, n)) <$> readInput
@@ -85,7 +78,7 @@ main = do
                         else do
                             let w3 = mergeWords w w2
                             let l3 = mergeMaps l2 l
-                            mapM_ (putStr . (<>" ")) . filterAnswers (w3, l3, n2) . getAnswers (answers c) $ w3
+                            mapM_ (putStr . (<>" ")) . filterAnswers (w3, l3, n2) . getAnswers c $ w3
                             putStrLn ""
                             hFlush stdout
                             go c (w3, l3, n2)
