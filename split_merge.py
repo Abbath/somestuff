@@ -8,27 +8,17 @@ def Division_Judge(img, h0, w0, h, w) :
     mean = np.mean(area)
     std = np.std(area, ddof = 1)
 
-    total_points = 0
-    operated_points = 0
-
-    for row in range(area.shape[0]) :
-        for col in range(area.shape[1]) :
-            if (area[row][col] - mean) < 2 * std :
-                operated_points += 1
-            total_points += 1
-
-    if total_points == 0:
-        return False
-
-    if operated_points / total_points >= 0.95 :
+    if np.sum(area - mean < 2 * std) / (area.shape[0] * area.shape[1]) >= 0.95 :
         return True
-    else :
+    else:
         return False
 
 def Merge(img, h0, w0, h, w) :
     area = img[h0 : h0 + h, w0 : w0 + w]
-    _, thresh = cv.threshold(area, 0, 255, cv.THRESH_OTSU + cv.THRESH_BINARY_INV)
+    _, thresh = cv.threshold(area, 0, 255, cv.THRESH_OTSU | cv.THRESH_BINARY_INV)
+    # thresh = cv.adaptiveThreshold(area, 255, cv.BORDER_ISOLATED | cv.BORDER_REPLICATE, cv.THRESH_BINARY_INV, 5, 0)
     img[h0 : h0 + h, w0 : w0 + w] = thresh
+
     # for row in range(h0, h0 + h) :
     #     for col in range(w0, w0 + w) :
     #         if img[row, col] > 100 and img[row, col] < 200:
@@ -38,18 +28,22 @@ def Merge(img, h0, w0, h, w) :
 
 def Recursion(img, h0, w0, h, w) :
     # If the splitting conditions are met, continue to split 
-    if not Division_Judge(img, h0, w0, h, w) and min(h, w) > 5 :
+    if min(h, w) >= 2 and not Division_Judge(img, h0, w0, h, w):
         # Recursion continues to determine whether it can continue to split 
         # Top left square 
-        Division_Judge(img, h0, w0, int(h0 / 2), int(w0 / 2))
+        if not Division_Judge(img, h0, w0, int(h / 2), int(w / 2)):
+            Recursion(img, h0, w0, int(h / 2), int(w / 2))
         # Upper right square 
-        Division_Judge(img, h0, w0 + int(w0 / 2), int(h0 / 2), int(w0 / 2))
+        if not Division_Judge(img, h0, w0 + int(w / 2), int(h / 2), int(w / 2)):
+            Recursion(img, h0, w0 + int(w / 2), int(h / 2), int(w / 2))
         # Lower left square 
-        Division_Judge(img, h0 + int(h0 / 2), w0, int(h0 / 2), int(w0 / 2))
+        if not Division_Judge(img, h0 + int(h / 2), w0, int(h / 2), int(w / 2)):
+            Recursion(img, h0 + int(h / 2), w0, int(h / 2), int(w / 2))
         # Lower right square 
-        Division_Judge(img, h0 + int(h0 / 2), w0 + int(w0 / 2), int(h0 / 2), int(w0 / 2))
-    else :
-        # Merge 
+        if not Division_Judge(img, h0 + int(h / 2), w0 + int(w / 2), int(h / 2), int(w / 2)):
+            Recursion(img, h0 + int(h / 2), w0 + int(w / 2), int(h / 2), int(w / 2))
+        # Merge
+    else:
         Merge(img, h0, w0, h, w)
 
 def Division_Merge_Segmented() :

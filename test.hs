@@ -60,7 +60,7 @@ matchLetters l w = all (\(n, c) -> Set.notMember n (get_places c)) $ zip [0..] w
         get_places c = maybe Set.empty snd (Map.lookup c l)
 
 matchNotLetters :: Set Char -> String -> String -> Bool
-matchNotLetters n w = or . zipWith (\a b -> a /= b && b `notElem` n) w
+matchNotLetters n w = and . zipWith (\a b -> a == b || b `notElem` n) w
 
 main :: IO ()
 main = do
@@ -78,10 +78,14 @@ main = do
                         else do
                             let w3 = mergeWords w w2
                             let l3 = mergeMaps l2 l
-                            mapM_ (putStr . (<>" ")) . filterAnswers (w3, l3, n2) . getAnswers c $ w3
-                            putStrLn ""
-                            hFlush stdout
-                            go c (w3, l3, n2)
+                            let possible = filterAnswers (w3, l3, n2) . getAnswers c $ w3
+                            if length possible == 1
+                            then putStrLn $ "Answer: " <> head possible
+                            else do
+                                mapM_ (putStr . (<>" ")) possible 
+                                putStrLn ""
+                                hFlush stdout
+                                go c (w3, l3, n2)
                 Left err -> do
                     putStrLn err
                     go c (w, l, n)
