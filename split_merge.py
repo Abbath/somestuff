@@ -5,19 +5,15 @@ import matplotlib.pyplot as plt
 # split 
 def Division_Judge(img, h0, w0, h, w) :
     area = img[h0 : h0 + h, w0 : w0 + w]
-    mean = np.mean(area)
-    std = np.std(area, ddof = 1)
-
-    if np.sum(area - mean < 2 * std) / (area.shape[0] * area.shape[1]) >= 0.95 :
-        return True
-    else:
-        return False
+    return area.max() - area.min() < 10
+    # mean = np.mean(area)
+    # std = np.std(area, ddof = 1)
+    # return np.sum(np.abs(area - mean) < 10 + std) / (area.shape[0] * area.shape[1]) >= 0.95
 
 def Merge(img, h0, w0, h, w) :
     area = img[h0 : h0 + h, w0 : w0 + w]
-    _, thresh = cv.threshold(area, 0, 255, cv.THRESH_OTSU | cv.THRESH_BINARY_INV)
-    # thresh = cv.adaptiveThreshold(area, 255, cv.BORDER_ISOLATED | cv.BORDER_REPLICATE, cv.THRESH_BINARY_INV, 5, 0)
-    img[h0 : h0 + h, w0 : w0 + w] = thresh
+    # _, thresh = cv.threshold(area, 0, 255, cv.THRESH_OTSU | cv.THRESH_BINARY)
+    img[h0 : h0 + h, w0 : w0 + w] = np.mean(area)
 
     # for row in range(h0, h0 + h) :
     #     for col in range(w0, w0 + w) :
@@ -27,27 +23,26 @@ def Merge(img, h0, w0, h, w) :
     #             img[row, col] = 255
 
 def Recursion(img, h0, w0, h, w) :
+    
     # If the splitting conditions are met, continue to split 
     if min(h, w) >= 2 and not Division_Judge(img, h0, w0, h, w):
+        print("recursing")
         # Recursion continues to determine whether it can continue to split 
         # Top left square 
-        if not Division_Judge(img, h0, w0, int(h / 2), int(w / 2)):
-            Recursion(img, h0, w0, int(h / 2), int(w / 2))
+        Recursion(img, h0, w0, int(h / 2), int(w / 2))
         # Upper right square 
-        if not Division_Judge(img, h0, w0 + int(w / 2), int(h / 2), int(w / 2)):
-            Recursion(img, h0, w0 + int(w / 2), int(h / 2), int(w / 2))
+        Recursion(img, h0, w0 + int(w / 2), int(h / 2), int(w / 2))
         # Lower left square 
-        if not Division_Judge(img, h0 + int(h / 2), w0, int(h / 2), int(w / 2)):
-            Recursion(img, h0 + int(h / 2), w0, int(h / 2), int(w / 2))
+        Recursion(img, h0 + int(h / 2), w0, int(h / 2), int(w / 2))
         # Lower right square 
-        if not Division_Judge(img, h0 + int(h / 2), w0 + int(w / 2), int(h / 2), int(w / 2)):
-            Recursion(img, h0 + int(h / 2), w0 + int(w / 2), int(h / 2), int(w / 2))
+        Recursion(img, h0 + int(h / 2), w0 + int(w / 2), int(h / 2), int(w / 2))
         # Merge
     else:
+        print("merging")
         Merge(img, h0, w0, h, w)
 
 def Division_Merge_Segmented() :
-    img = cv.imread('../P005.jpg')
+    img = cv.imread('../102676739.jpg')
     img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     hist, bins = np.histogram(img_gray, bins = 256)
     # print(f' Five-pointed star , The ellipse , background , The pixel values of pentagons are :'
